@@ -47,22 +47,28 @@ LOGS = {
     "quick": "/root/quick.log",
 }
 
-_token = {"v": None, "ts": 0}
+_token = {"v": None, "ts": 0, "fail_ts": 0}
 
 
 def ab_login():
-    if _token["v"] and time.time() - _token["ts"] < 1800:
+    """登录 AstrBot 后台拿 JWT。失败要负缓存：否则 /api/status 每 5 秒都会卡满超时。"""
+    now = time.time()
+    if _token["v"] and now - _token["ts"] < 1800:
         return _token["v"]
+    if now - _token["fail_ts"] < 60:      # 60 秒内不重试，保住页面响应速度
+        return None
     try:
         body = json.dumps({"username": AB_USER, "password": AB_PASS}).encode()
         r = urllib.request.Request(AB + "/api/auth/login", data=body,
                                    headers={"Content-Type": "application/json"}, method="POST")
-        with urllib.request.urlopen(r, timeout=20) as x:
+        op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with op.open(r, timeout=12) as x:
             tok = json.loads(x.read().decode())["data"]["token"]
         _token["v"] = tok
         _token["ts"] = time.time()
         return tok
     except Exception:
+        _token["fail_ts"] = now
         return None
 
 
@@ -74,7 +80,7 @@ def ab_call(path, data=None, method="POST"):
     body = json.dumps(data).encode() if data is not None else None
     r = urllib.request.Request(AB + path, data=body, headers=h, method=method)
     try:
-        with urllib.request.urlopen(r, timeout=30) as x:
+        with urllib.request.urlopen(r, timeout=45) as x:
             return json.loads(x.read().decode()), None
     except urllib.error.HTTPError as e:
         try:
@@ -136,7 +142,15 @@ def tail(path, n=60):
 def perf():
     def kv(cmd):
         return sh(cmd).strip()
-    mem = kv("free -m | sed -n '2p'")
+    raw_mem = kv("free -m | sed -n '2p'")
+    mem = raw_mem
+    try:
+        parts = raw_mem.split()
+        # free -m 第二行：total used free shared buff/cache available
+        total, used = parts[1], parts[2]
+        mem = "%s / %s MB" % (used, total)
+    except Exception:
+        pass
     load = kv("cut -d' ' -f1-3 /proc/loadavg")
     uptime = kv("cut -d' ' -f1 /proc/uptime")
     ab_start = ""

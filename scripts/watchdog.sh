@@ -66,11 +66,18 @@ while true; do
     sh /root/restart_astrbot.sh >/dev/null 2>&1
     fail_ab=0
   else
-    port_up 6185 || fail_ab=$((fail_ab + 1))
-    if [ "$fail_ab" -ge 20 ]; then
-      log "AstrBot 进程在但 6185 连续 10 分钟不通，重启"
-      sh /root/restart_astrbot.sh >/dev/null 2>&1
+    if port_up 6185; then
       fail_ab=0
+    else
+      # 启动期不杀：AstrBot 冷启动在 TCG 下要 5-10 分钟，14 插件时更久。
+      # 只有「6185 连续不通 15 次(约 7.5min) 且 ab.log 已 8 分钟没更新」才判定真卡死。
+      idle=$(( $(date +%s) - $(stat -c %Y /root/ab.log 2>/dev/null || echo 0) ))
+      fail_ab=$((fail_ab + 1))
+      if [ "$fail_ab" -ge 15 ] && [ "$idle" -gt 480 ]; then
+        log "AstrBot 卡死（6185 不通 ${fail_ab} 次，ab.log 已 ${idle}s 无更新），重启"
+        sh /root/restart_astrbot.sh >/dev/null 2>&1
+        fail_ab=0
+      fi
     fi
   fi
   {

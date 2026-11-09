@@ -75,7 +75,7 @@ if [ -z "$(pgrep -f '[q]q --no-sandbox' | head -1)" ]; then
   fi
   sleep 35
 fi
- SnowLuma ----------
+# ---------- 3. SnowLuma ----------
 if [ -z "$(pgrep -f '[i]ndex.mjs' | head -1)" ]; then
   say "SnowLuma 不在，启动"
   sh /root/restart_snowluma.sh >/dev/null 2>&1

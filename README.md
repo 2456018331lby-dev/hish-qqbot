@@ -93,11 +93,11 @@ flowchart TB
 | ![虚机桌面](docs/screenshots/01-vm-desktop.png) | ![控制台首页](docs/screenshots/02-console.png) | ![设置页](docs/screenshots/03-settings.png) | ![维修页](docs/screenshots/04-repair.png) |
 
 - **01** `01-vm-desktop.png`（1280×800，**平板真机截图**）：Xvfb `:99` 的虚机桌面，Linux QQ 已登录、会话列表可见（昵称/群名/好友名已打码）——证明「扫码登录 + SnowLuma 注入」这两段通了。
-- **02** `02-console.png`（v3 预览渲染）：控制台首页——顶部**体检卡**一句话给结论（全能聊 / 部分可用 / 未就绪）、5 行状态灯（QQ / SnowLuma / AstrBot / 桌面 VNC / 看门狗）、性能卡（核数 / 负载 / 内存 / 运行时长 / AstrBot 就绪时刻）、常用入口与服务操作。
-- **03** `03-settings.png`（v3 预览渲染）：设置页——模型开关（`ben/deepseek-v4.1-flash` 开、`vyceai/deepseek-v4.1` 关）、插件开关、人格编辑、唤醒前缀。**改完即时生效**（模型切换需重启 AstrBot），全程不碰命令行。
-- **04** `04-repair.png`（v3 预览渲染）：维修页——一键修复（后台跑 `quick.sh`）+ 四类日志（AstrBot / SnowLuma / 看门狗 / 开机启动），出问题先点这个。
+- **02** `02-console.png`（v3 真机截图）：控制台首页——顶部**体检卡**一句话给结论（全能聊 / 部分可用 / 未就绪）、5 行状态灯（QQ / SnowLuma / AstrBot / 桌面 VNC / 看门狗）、性能卡（核数 / 负载 / 内存 / 运行时长 / AstrBot 就绪时刻）、常用入口与服务操作。
+- **03** `03-settings.png`（v3 真机截图）：设置页——模型开关（`ben/deepseek-v4.1-flash` 开、`vyceai/deepseek-v4.1` 关）、插件开关、人格编辑、唤醒前缀。**改完即时生效**（模型切换需重启 AstrBot），全程不碰命令行。
+- **04** `04-repair.png`（v3 真机截图）：维修页——一键修复（后台跑 `quick.sh`）+ 四类日志（AstrBot / SnowLuma / 看门狗 / 开机启动），出问题先点这个。
 
-> 诚实说明：01 是真机截图；02/03/04 是用 `tools/panel_preview.py`（固定示例数据）在 PC 上渲染的 v3 界面，**界面就是实际代码**，只是背后没有真虚机。平板回来后建议用真机同路径覆盖。
+> 说明：01 是平板真机截图（`hdc snapshot_display`）；02/03/04 是 v3 控制台在平板 HiSH 虚机里跑起来的真实页面（PC 浏览器经 `192.168.x.x:8080` 端口映射打开），模型/插件列表与状态灯都是真机数据。
 
 更多截图规范与脱敏清单见 [docs/screenshots/README.md](docs/screenshots/README.md)。
 
@@ -309,6 +309,8 @@ hish-qqbot/
 │   ├── hide_qq.sh             # 把 QQ 窗口 unmap 省 CPU（可选）
 │   ├── panel_v3.py            # 8080 控制台 / 设置页 / 维修页（部署名 /root/panel.py）
 │   ├── deploy_panel.sh        # 拉取并自检控制台
+│   ├── restart_panel.sh       # 拉最新 panel + 重启 + 自检（改了面板代码用这个）
+│   ├── hygiene.py             # 清理配置里指向「已删除 provider」的死引用（幂等）
 │   ├── vyceai_proxy.py        # 流式适配代理：非流式 → 强制 stream → 拼回 JSON
 │   ├── patch_cfg.py           # 把 AstrBot platform 改成 aiocqhttp / 6199
 │   ├── only_deepseek.py       # 模型列表收敛到单个 DeepSeek
