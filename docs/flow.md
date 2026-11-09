@@ -378,3 +378,16 @@ VM: /root/z2.sh 每 4 秒 wget cmd.txt → 内容变化就执行 → 结果 POST
 ```
 
 **这是「谁写 cmd.txt 谁就能拿到 shell」的通道**，仅限内网自用。用完请从 `boot.sh` 的 `[6/6]` 里删掉那两行，或者删掉 `/root/z2.sh`。
+
+---
+
+## 真机踩过的 4 个坑（2026-11-09 实测，代码里已修）
+
+| # | 现象 | 真实原因 | 处理 |
+|---|---|---|---|
+| 1 | 私聊能回，群里 @ 也不回（只有管理员能触发） | `platform_settings.enable_id_white_list=true` 但 `id_whitelist` 为空 → 只有 `admins_id` 里的人能触发 | `scripts/fix_whitelist.py` 把它关掉（或往白名单里加群号） |
+| 2 | 日志刷 `Provider openai_1/gpt-5.6-luna was not found` / `Fallback chat provider ... not found`，偶发不回 | 迁移时把已删掉的 provider 留在了 `agent_runner.config.model.fallback_provider_ids` 和 `image_caption_provider_id` 里 | `scripts/hygiene.py` 清掉死引用（改前自动备份） |
+| 3 | 群里一直不回，日志每 30 秒一条 `等待插件初始化超时（30.0秒）` | `livingmemory` 这类插件要等 Embedding Provider 就绪，没有就无限重试，把回复流水线拖住 | 没有 embedding 就停掉该插件（控制台「设置→插件」一键关） |
+| 4 | 冷启动 40 分钟还起不来 | Boot 期间 QQ 窗口在渲染（软件渲染 ~40% CPU）+ 控制台每 5 秒拉状态，把 4/8 vCPU 抢光 | 开机脚本先 `hide_qq.sh` 隐藏窗口；启动期先别开控制台页面；`panel_v3` 已把登录失败做 60s 负缓存 |
+
+> 结论：**冷启动慢是真机物理上限**（TCG 无 KVM + 14 插件），但「启动期别再压它」能把 40 分钟压到十几分钟。
