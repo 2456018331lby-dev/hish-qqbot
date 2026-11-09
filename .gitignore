@@ -1,0 +1,71 @@
+# ---- 凭据与运行时数据：绝对不要提交 ----
+# AstrBot 配置里有 model api key；备份文件同样含 key
+cmd_config.json
+*.bak.*
+data/
+config/
+*.key
+.env
+.env.*
+token
+*.token
+
+# ---- 日志（体积大且含账号/群号） ----
+*.log
+logs/
+boot.log
+ab.log
+sl.log
+panel.log
+z2.log
+x11vnc.log
+ws.log
+
+# ---- 运行时产物 ----
+*.pid
+*.out
+*_out.txt
+nohup.out
+cmd.txt
+out.txt
+nets.txt
+net.txt
+rc/
+
+# ---- 截图/录屏：图片资源按规范放，临时截图不入库 ----
+# 说明：docs/screenshots 下的正式截图是**要**入库的，所以下面只忽略根目录与临时目录的图
+/*.png
+/*.jpg
+/tmp/
+_tmp/
+*.tmp
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---- 大件二进制与软件包（用下载脚本取，别塞进 git） ----
+*.tar.gz
+*.tgz
+*.zip
+*.deb
+*.apk
+*.hap
+ubuntu-base-*
+
+# ---- 系统/编辑器 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
