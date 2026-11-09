@@ -88,17 +88,16 @@ flowchart TB
 
 ## 截图
 
-真机截图（已脱敏：QQ 昵称 / 群名 / 好友名打码）。拍的顺序就是真实顺序：**先看 VM 桌面里 QQ 登录没有，再看控制台看四个服务，最后看设置页改配置**。
+| 虚机桌面：Linux QQ 已登录 | 8080 控制台首页（v3） | 8080 设置页（v3） | 8080 维修页（v3） |
+|---|---|---|---|
+| ![虚机桌面](docs/screenshots/01-vm-desktop.png) | ![控制台首页](docs/screenshots/02-console.png) | ![设置页](docs/screenshots/03-settings.png) | ![维修页](docs/screenshots/04-repair.png) |
 
-| 虚机桌面：Linux QQ 已登录 | 8080 控制台首页 | 8080 设置页 |
-|---|---|---|
-| ![虚机桌面](docs/screenshots/01-vm-desktop.png) | ![控制台首页](docs/screenshots/02-console.png) | ![设置页](docs/screenshots/03-settings.png) |
+- **01** `01-vm-desktop.png`（1280×800，**平板真机截图**）：Xvfb `:99` 的虚机桌面，Linux QQ 已登录、会话列表可见（昵称/群名/好友名已打码）——证明「扫码登录 + SnowLuma 注入」这两段通了。
+- **02** `02-console.png`（v3 预览渲染）：控制台首页——顶部**体检卡**一句话给结论（全能聊 / 部分可用 / 未就绪）、5 行状态灯（QQ / SnowLuma / AstrBot / 桌面 VNC / 看门狗）、性能卡（核数 / 负载 / 内存 / 运行时长 / AstrBot 就绪时刻）、常用入口与服务操作。
+- **03** `03-settings.png`（v3 预览渲染）：设置页——模型开关（`ben/deepseek-v4.1-flash` 开、`vyceai/deepseek-v4.1` 关）、插件开关、人格编辑、唤醒前缀。**改完即时生效**（模型切换需重启 AstrBot），全程不碰命令行。
+- **04** `04-repair.png`（v3 预览渲染）：维修页——一键修复（后台跑 `quick.sh`）+ 四类日志（AstrBot / SnowLuma / 看门狗 / 开机启动），出问题先点这个。
 
-- **01**（`docs/screenshots/01-vm-desktop.png`，1280×800）：Xvfb `:99` 的虚机桌面，QQ 主面板已登录、会话列表可见（已打码）——说明「登录 + 注入」这两段通了。
-- **02**（`docs/screenshots/02-console.png`）：8080 控制台首页：四个状态灯（QQ / SnowLuma / AstrBot / 桌面 VNC）、常用入口、服务操作按钮。**这张拍的是 v2 界面**：当时 AstrBot 显示「未运行」，且还没有 v3 的体检卡 / 性能快照 / 维修页（`panel_v3.py` 已实现，**截图待重拍**）。
-- **03**（`docs/screenshots/03-settings.png`）：设置页的模型开关（`ben/deepseek-v4.1-flash` 开、`vyceai/deepseek-v4.1` 关）与插件开关列表，改完即时生效（模型切换后需重启 AstrBot），不用碰命令行。
-
-> ⚠️ 诚实说明：**02 / 03 两张是 v2 控制台界面**（`panel_v3.py` 已实现体检卡 / 性能快照 / 维修页，但**尚无对应截图**，待补拍）。补拍后请同步 [docs/testing.md](docs/testing.md) 与 [docs/screenshots/README.md](docs/screenshots/README.md)。
+> 诚实说明：01 是真机截图；02/03/04 是用 `tools/panel_preview.py`（固定示例数据）在 PC 上渲染的 v3 界面，**界面就是实际代码**，只是背后没有真虚机。平板回来后建议用真机同路径覆盖。
 
 更多截图规范与脱敏清单见 [docs/screenshots/README.md](docs/screenshots/README.md)。
 
@@ -319,7 +318,8 @@ hish-qqbot/
 │   ├── hm.py                  # hdc 控制脚本（截屏/点击/装应用/端口转发）
 │   ├── pc_bootstrap.py        # 一条命令：起 PC 侧服务 → 查 hdc → 下发 quick.sh → 截图
 │   ├── logsvr.py              # 8081 收 VM 回传的日志/截图（调试用）
-│   └── fwd8789.py             # 8789 把 PC 上的模型网关转发给平板（可选，见「模型对接」）
+│   ├── fwd8789.py             # 8789 把 PC 上的模型网关转发给平板（可选，见「模型对接」）
+│   └── panel_preview.py       # 离线预览控制台界面（假数据，改 HTML 时用）
 └── tests/                     # 验收脚本（复制到虚机里跑）
     ├── healthcheck.sh         # 11 项体检，全绿才算健康
     ├── bench.sh               # 冷启动 / 回复耗时基准
