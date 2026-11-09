@@ -35,6 +35,21 @@ for d in proc dev sys; do
   mountpoint -q "$R/$d" || mount --bind "/$d" "$R/$d" 2>/dev/null || say "WARN: 挂 $d 失败"
 done
 
+# ---------- 0.5 登录自启 hook 自愈（把 .profile 指向 quick.sh，而不是一次性 boot.sh）----------
+# PROFILE_HOOK_V2
+if ! grep -q "PROFILE_HOOK_V2" /root/.profile 2>/dev/null; then
+  say "写入 /root/.profile 自启钩子"
+  { echo "#!/bin/sh"
+    echo "# PROFILE_HOOK_V2 —— 登录 shell 自动拉起机器人全套（幂等）"
+    echo 'if [ -z "$BOTSTACK_STARTED" ]; then export BOTSTACK_STARTED=1; nohup sh /root/quick.sh >/root/boot.log 2>&1 & fi'
+  } > /root/.profile && chmod 644 /root/.profile
+fi
+
+# 控制台登录用的后台密码（不在仓库里存；需要时由部署者通过 AB_PASS 传入一次）
+if [ -n "${AB_PASS:-}" ]; then
+  printf '%s' "$AB_PASS" > /root/.abpass && chmod 600 /root/.abpass && say "已写入 /root/.abpass"
+fi
+
 # ---------- 1. 清 X 残留并拉起 Xvfb ----------
 if ! chroot "$R" /bin/bash -c 'DISPLAY=:99 xdpyinfo >/dev/null 2>&1'; then
   say "X 不可用，清理锁并重启"
