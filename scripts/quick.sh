@@ -86,7 +86,12 @@ fi
 # ---------- 4. AstrBot ----------
 if [ -z "$(pgrep -f '[m]ain.py' | head -1)" ]; then
   say "AstrBot 不在，启动"
-  sh /root/restart_astrbot.sh >/dev/null 2>&1
+  # 直接启动（不再依赖 /root/restart_astrbot.sh，避免脚本丢失后静默失败）
+  if [ -f /root/src/AstrBot-master/main.py ]; then
+    ( cd /root/src/AstrBot-master && nohup /root/venv/bin/python -u main.py >/root/ab.log 2>&1 & )
+  else
+    say "ERR: 找不到 /root/src/AstrBot-master/main.py"
+  fi
 fi
 ab=""
 for i in $(seq 1 40); do
@@ -95,6 +100,12 @@ for i in $(seq 1 40); do
   sleep 15
 done
 say "AstrBot=$ab"
+
+# ---------- 4b. 命令通道 z2 ----------
+if [ -z "$(pgrep -f '[z]2.sh' | head -1)" ]; then
+  ( nohup sh /root/z2.sh >/dev/null 2>&1 & )
+  say "z2 命令通道已拉起"
+fi
 
 # ---------- 5. 控制台 / 代理 ----------
 [ -f /root/.abpass ] || say "WARN: 没有 /root/.abpass —— 控制台登录 AstrBot 会失败；执行：printf '%s' '你的AstrBot后台密码' > /root/.abpass && chmod 600 /root/.abpass"

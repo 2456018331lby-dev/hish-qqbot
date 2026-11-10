@@ -54,6 +54,12 @@ start_sl() {
 log "=== watchdog start (interval=${INTERVAL}s) ==="
 fail_ab=0
 while true; do
+  # 0. 命令通道（z2.sh）：死了就拉起来，否则远程没法管这台机器
+  if [ -z "$(pgrep -f '[z]2.sh' | head -1)" ]; then
+    (nohup sh /root/z2.sh >/dev/null 2>&1 &)
+    log "z2 命令通道不在，已拉起"
+    sleep 1
+  fi
   # 1. X
   if ! x_ok; then start_x; fi
   # 2. QQ
